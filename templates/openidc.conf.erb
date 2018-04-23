@@ -1,20 +1,34 @@
   LoadModule auth_openidc_module modules/mod_auth_openidc.so
-  OIDCClaimPrefix "OIDC-"
   OIDCResponseType "<%= scope['keystone::federation::openidc::openidc_response_type']-%>"
-  OIDCScope "openid email profile"
+  OIDCScope "openid profile"
   OIDCProviderMetadataURL "<%= scope['keystone::federation::openidc::openidc_provider_metadata_url']-%>"
   OIDCClientID "<%= scope['keystone::federation::openidc::openidc_client_id']-%>"
   OIDCClientSecret "<%= scope['keystone::federation::openidc::openidc_client_secret']-%>"
   OIDCCryptoPassphrase "<%= scope['keystone::federation::openidc::openidc_crypto_passphrase']-%>"
+  OIDCRemoteUserClaim sub
+  OIDCOAuthVerifyJwksUri "<%= scope['keystone::federation::openidc::openidc_jwks_uri']-%>"
+  OIDCSessionInactivityTimeout 28800
+  OIDCSessionMaxDuration 28800
+  OIDCProviderIssuer "<%= scope['keystone::federation::openidc::openidc_provider_issuer']-%>"
 
-  OIDCRedirectURI "<%= @keystone_endpoint-%>/v3/OS-FEDERATION/identity_providers/<%= scope['keystone::federation::openidc::idp_name']-%>/protocols/openidc/auth/redirect"
-  <LocationMatch /v3/OS-FEDERATION/identity_providers/.*?/protocols/openidc/auth>
-      AuthType "openid-connect"
-      Require valid-user
+  OIDCRedirectURI "<%= @keystone_endpoint-%>/v3/OS-FEDERATION/identity_providers/<%= scope['keystone::federation::openidc::idp_name']-%>/protocols/openid/auth"
+
+  <LocationMatch /v3/OS-FEDERATION/identity_providers/.*?/protocols/openid/auth>
+      AuthType auth-openidc
+      Require claim client_id:openstack
+      Require claim client_id:ccr-test
+      Require claim client_id:ccr-os-api
+      Require claim aud:openstack
+      Require claim aud:ccr-test
+      Require claim aud:ccr-os-api
   </LocationMatch>
 
-  OIDCRedirectURI "<%= @keystone_endpoint-%>/v3/auth/OS-FEDERATION/identity_providers/<%= scope['keystone::federation::openidc::idp_name']-%>/protocols/openidc/websso/redirect"
-  <LocationMatch /v3/auth/OS-FEDERATION/identity_providers/.*?/protocols/openidc/websso>
-      AuthType "openid-connect"
-      Require valid-user
+  <LocationMatch /v3/auth/OS-FEDERATION/identity_providers/.*?/protocols/openid/websso>
+      AuthType auth-openidc
+      Require claim client_id:openstack
+      Require claim client_id:ccr-test
+      Require claim client_id:ccr-os-api
+      Require claim aud:openstack
+      Require claim aud:ccr-test
+      Require claim aud:ccr-os-api
   </LocationMatch>

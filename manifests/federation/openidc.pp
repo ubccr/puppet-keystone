@@ -70,6 +70,8 @@ class keystone::federation::openidc (
   $openidc_provider_metadata_url,
   $openidc_client_id,
   $openidc_client_secret,
+  $openidc_jwks_uri,
+  $openidc_provider_issuer,
   $openidc_crypto_passphrase   = 'openstack',
   $openidc_response_type       = 'id_token',
   $admin_port                  = false,
@@ -92,7 +94,7 @@ class keystone::federation::openidc (
     fail('The external method should be dropped to avoid any interference with openidc')
   }
 
-  if !('openidc' in $methods ) {
+  if !('openid' in $methods ) {
     fail('Methods should contain openidc as one of the auth methods.')
   } else {
     if ($module_plugin != 'keystone.auth.plugins.mapped.Mapped') {
@@ -109,8 +111,9 @@ class keystone::federation::openidc (
 
   keystone_config {
     'auth/methods': value => join(any2array($methods),',');
-    'auth/openidc': value => $module_plugin;
   }
+  # MINNUS
+  #'auth/openidc': value => $module_plugin;
 
   ensure_packages([$::keystone::params::openidc_package_name], {
     ensure => $package_ensure,
